@@ -9,4 +9,17 @@ add_subdirectory(external/eigen)
 include_directories(external/eigen)
 include_directories(external/eigenrand)
 
-add_executable(NeuralNetworks main.cpp)
+add_executable(NeuralNetworks main.cpp
+        ActivationFunction.h
+        NeuralNetworksTypes.h
+        Layer.cpp
+        Layer.h
+        LossFunction.h
+        ReLU.cpp
+        DefaultFunctions.h
+        Model.cpp
+        Model.h
+        Dataset.cpp
+        Dataset.h
+        Scheduler.h
+        EuclideanLossFunction.cpp)
