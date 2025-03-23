@@ -1,30 +1,30 @@
 #pragma once
 
-#include "DefaultFunctions.h"
-#include "NeuralNetworksTypes.h"
+#include "LinearAlgebra.h"
 #include <functional>
 
 namespace NeuralNetworks {
 
-    class ActivationFunction {
-    public:
-        ActivationFunction() : sigma_(ReLU), sigma_derivative_(ReLU_Der) {
-        }
+namespace AFunc {
 
-        ActivationFunction(std::function<Vector(Vector)> func, std::function<Matrix(Vector)> func_der)
-            : sigma_(std::move(func)), sigma_derivative_(std::move(func_der)) {}
+Vector ReLU(const Vector& x);
+Matrix ReLU_Der(const Vector& x);
 
-        Vector apply(Vector x) const {
-            return sigma_(std::move(x));
-        }
+}  // namespace AFunc
 
-        Matrix derivative(Vector x) const {
-            return sigma_derivative_(std::move(x));
-        }
+class ActivationFunction {
+    using ApplyFunc = std::function<Vector(Vector)>;
+    using DerFunc = std::function<Matrix(Vector)>;
 
-    private:
-        std::function<Vector(Vector)> sigma_;
-        std::function<Matrix(Vector)> sigma_derivative_;
-    };
+public:
+    ActivationFunction();
+    ActivationFunction(ApplyFunc func, DerFunc func_der);
+    Vector apply(Vector x) const;
+    Matrix derivative(Vector x) const;
 
-}
+private:
+    ApplyFunc sigma_ = AFunc::ReLU;
+    DerFunc sigma_derivative_ = AFunc::ReLU_Der;
+};
+
+}  // namespace NeuralNetworks

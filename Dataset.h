@@ -1,26 +1,48 @@
 #pragma once
 
-#include <iostream>
-#include "NeuralNetworksTypes.h"
+#include "FileReader.h"
 
 namespace NeuralNetworks {
 
+enum BatchSize : Index;
+
+using Batch = Data;
+
 class Dataset {
 public:
-    Dataset(const std::string& images_path, const std::string& labels_path);
+    explicit Dataset(Data&& data);
+    void shuffle();
+    Index size() const;
 
-    std::pair<Matrix, Matrix> GetBatch(size_t batch_size);
-    void Shuffle();
-    size_t Size();
+    class BatchIterator {
+    public:
+        BatchIterator(const Dataset& dataset, BatchSize batch_size, Index ind);
+        Batch operator*() const;
+        BatchIterator& operator++();
+        bool operator==(const BatchIterator& other) const;
+        bool operator!=(const BatchIterator& other) const;
+
+    private:
+        const Dataset& dataset_;
+        BatchSize batch_size_;
+        Index ind_;
+    };
+
+    class BatchRange {
+    public:
+        BatchRange(const Dataset& dataset, BatchSize batch_size);
+        BatchIterator begin() const;
+        BatchIterator end() const;
+
+    private:
+        const Dataset& dataset_;
+        BatchSize batch_size_;
+    };
+
+    BatchRange getBatches(BatchSize batch_size) const;
 
 private:
-    void LoadImages(const std::string& path);
-    void LoadLabels(const std::string& path);
-
-    Matrix images_;
-    Matrix labels_;
-
-    size_t current_index_ = 0;
+    Data data_;
 };
 
-}
+}  // namespace NeuralNetworks

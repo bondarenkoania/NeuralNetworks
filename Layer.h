@@ -1,29 +1,35 @@
 #pragma once
 
 #include "ActivationFunction.h"
-#include <EigenRand/EigenRand>
+#include "Random.h"
 
 namespace NeuralNetworks {
 
+enum In : Index;
+enum Out : Index;
+
 class Layer {
 public:
-    Layer(InputSize input_size, OutputSize output_size,
-        Eigen::Rand::P8_mt19937_64& urng, ActivationFunction* activation_func);
+    Layer(In input_size, Out output_size, ActivationFunction func, Random& rnd);
 
-    Matrix forward(const Matrix& X);
-    Matrix backward(Matrix U);
-    void update(double learning_rate_A, double learning_rate_b);
+    Matrix forward(Matrix&& X);
+    Matrix backward(Matrix&& U, double learning_rate);
+    Matrix predict(Matrix&& X) const;
+
+    struct Cache {
+        Matrix input_batch;
+        Matrix modified_input_batch;
+        Matrix gradA;
+        Vector gradb;
+    };
+    void initCache();
+    void resetCache();
 
 private:
-    Matrix A;
-    Vector b;
-    ActivationFunction* activation_func_;
-
-    Matrix input_batch_;
-    Matrix modified_input_batch_;
-
-    Matrix gradA;
-    Vector gradb;
+    Matrix A_;
+    Vector b_;
+    ActivationFunction activation_func_;
+    std::unique_ptr<Cache> cache_;
 };
 
-}
+}  // namespace NeuralNetworks

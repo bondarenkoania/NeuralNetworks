@@ -6,41 +6,61 @@
 
 namespace NeuralNetworks {
 
-    Layer::Layer(
-        InputSize input_size, OutputSize output_size,
-        Eigen::Rand::P8_mt19937_64& urng, ActivationFunction* activation_func)
-            : A(Eigen::Rand::normal<Matrix>(output_size, input_size, urng))
-            , b(Eigen::Rand::normal<Matrix>(output_size, 1, urng))
-            , activation_func_(activation_func) {
-    }
-
-    Matrix Layer::forward(const Matrix& X) {
-        assert((X.rows() == A.cols()) && "Incorrect size of input vectors in forward.");
-        auto batch_size = X.cols();
-        input_batch_ = X;
-        modified_input_batch_ = A * X + b.replicate(1, batch_size);
-        Matrix result(A.rows(), batch_size);
-        for (int i = 0; i < batch_size; ++i) {
-            result.col(i) = activation_func_->apply(modified_input_batch_.col(i));
-        }
-        return result;
-    }
-
-    Matrix Layer::backward(Matrix U) {
-        assert((U.cols() == A.rows()) && "Incorrect size of input rows in backward.");
-        assert((U.rows() == input_batch_.cols()) && "Incorrect batch size in backward.");
-        size_t batch_size = U.rows();
-        for (int i = 0; i < batch_size; ++i) {
-            U.row(i) *= activation_func_->derivative(modified_input_batch_.col(i));
-        }
-        gradb = U.transpose().rowwise().mean();
-        gradA = U.transpose() * input_batch_.transpose() / batch_size;
-        return U * A;
-    }
-
-    void Layer::update(double learning_rate_A, double learning_rate_b) {
-        A -= gradA * learning_rate_A;
-        b -= gradb * learning_rate_b;
-    }
-
+Layer::Layer(In input_size, Out output_size, ActivationFunction func, Random& rnd)
+    : A_(rnd.normalMatrix(output_size, input_size)),
+      b_(rnd.normalVector(output_size)),
+      activation_func_(std::move(func)) {
 }
+
+Matrix Layer::forward(Matrix&& X) {
+    assert(X.rows() == A_.cols() && "Incorrect size of input vectors in forward.");
+    assert(cache_ != nullptr && "Uninitialized cache during training in forward.");
+
+    cache_->input_batch = std::move(X);
+    cache_->modified_input_batch = A_ * cache_->input_batch;
+    cache_->modified_input_batch.colwise() += b_;
+
+    Matrix result = cache_->modified_input_batch;
+    for (Index i = 0; i < result.cols(); ++i) {
+        result.col(i) = activation_func_.apply(result.col(i));
+    }
+    return result;
+}
+
+Matrix Layer::backward(Matrix&& U, double learning_rate) {
+    assert((U.cols() == A_.rows()) && "Incorrect size of input rows in backward.");
+    assert((U.rows() == cache_->input_batch.cols()) && "Incorrect batch size in backward.");
+    assert(cache_ != nullptr && "Uninitialized cache during training in backward.");
+
+    Index batch_size = U.rows();
+    for (Index i = 0; i < batch_size; ++i) {
+        U.row(i) *= activation_func_.derivative(cache_->modified_input_batch.col(i));
+    }
+    cache_->gradb = U.transpose().rowwise().mean();
+    cache_->gradA = U.transpose() * cache_->input_batch.transpose() / batch_size;
+
+    A_ -= cache_->gradA * learning_rate;
+    b_ -= cache_->gradb * learning_rate;
+
+    return U * A_;
+}
+
+Matrix Layer::predict(Matrix&& X) const {
+    assert((X.rows() == A_.cols()) && "Incorrect size of input vectors in predict.");
+
+    X = A_ * X;
+    for (Index i = 0; i < X.cols(); ++i) {
+        X.col(i) = activation_func_.apply(X.col(i));
+    }
+    return X;
+}
+
+void Layer::initCache() {
+    cache_ = std::make_unique<Cache>();
+}
+
+void Layer::resetCache() {
+    cache_.reset();
+}
+
+}  // namespace NeuralNetworks

@@ -4,22 +4,19 @@ project(NeuralNetworks)
 set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(external/eigen)
-#add_subdirectory(external/eigenrand)
 
 include_directories(external/eigen)
 include_directories(external/eigenrand)
 
 add_executable(NeuralNetworks main.cpp
-        ActivationFunction.h
-        NeuralNetworksTypes.h
         Layer.cpp
-        Layer.h
-        LossFunction.h
-        ReLU.cpp
-        DefaultFunctions.h
-        Model.cpp
-        Model.h
+        Network.cpp
         Dataset.cpp
-        Dataset.h
-        Scheduler.h
-        EuclideanLossFunction.cpp)
+        ActivationFunction.cpp
+        LossFunction.cpp
+        Random.cpp
+        NetworkBuilder.cpp
+        FileReader.cpp
+        Scheduler.cpp)
+
+target_compile_features(NeuralNetworks PRIVATE cxx_std_20)
