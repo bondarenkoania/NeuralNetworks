@@ -1,7 +1,4 @@
 #include "Layer.h"
-
-// uncomment to disable assert()
-// #define NDEBUG
 #include <cassert>
 
 namespace NeuralNetworks {
@@ -27,7 +24,7 @@ Matrix Layer::forward(Matrix&& X) {
     return result;
 }
 
-Matrix Layer::backward(Matrix&& U, double learning_rate) {
+Matrix Layer::backward(Matrix&& U, Optimizer opt) {
     assert((U.cols() == A_.rows()) && "Incorrect size of input rows in backward.");
     assert((U.rows() == cache_->input_batch.cols()) && "Incorrect batch size in backward.");
     assert(cache_ != nullptr && "Uninitialized cache during training in backward.");
@@ -36,13 +33,14 @@ Matrix Layer::backward(Matrix&& U, double learning_rate) {
     for (Index i = 0; i < batch_size; ++i) {
         U.row(i) *= activation_func_.derivative(cache_->modified_input_batch.col(i));
     }
-    cache_->gradb = U.transpose().rowwise().mean();
-    cache_->gradA = U.transpose() * cache_->input_batch.transpose() / batch_size;
+    Vector gradb = U.transpose().rowwise().mean();
+    Matrix gradA = U.transpose() * cache_->input_batch.transpose() / batch_size;
 
-    A_ -= cache_->gradA * learning_rate;
-    b_ -= cache_->gradb * learning_rate;
+    Matrix result = U * A_;
+    opt.update(A_, std::move(gradA), cache_->cache_A);
+    opt.update(b_, std::move(gradb), cache_->cache_b);
 
-    return U * A_;
+    return result;
 }
 
 Matrix Layer::predict(Matrix&& X) const {

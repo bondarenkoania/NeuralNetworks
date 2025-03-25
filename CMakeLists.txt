@@ -17,6 +17,7 @@ add_executable(NeuralNetworks main.cpp
         Random.cpp
         NetworkBuilder.cpp
         FileReader.cpp
-        Scheduler.cpp)
+        Scheduler.cpp
+        Optimizer.cpp)
 
 target_compile_features(NeuralNetworks PRIVATE cxx_std_20)
