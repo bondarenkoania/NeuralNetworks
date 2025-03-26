@@ -11,34 +11,35 @@ Layer::Layer(In input_size, Out output_size, ActivationFunction func, Random& rn
 
 Matrix Layer::forward(Matrix&& X) {
     assert(X.rows() == A_.cols() && "Incorrect size of input vectors in forward.");
-    assert(cache_ != nullptr && "Uninitialized cache during training in forward.");
+    assert(lcache_ != nullptr && "Uninitialized layer cache during training in forward.");
 
-    cache_->input_batch = std::move(X);
-    cache_->modified_input_batch = A_ * cache_->input_batch;
-    cache_->modified_input_batch.colwise() += b_;
+    lcache_->input_batch = std::move(X);
+    lcache_->modified_input_batch = A_ * lcache_->input_batch;
+    lcache_->modified_input_batch.colwise() += b_;
 
-    Matrix result = cache_->modified_input_batch;
+    Matrix result = lcache_->modified_input_batch;
     for (Index i = 0; i < result.cols(); ++i) {
         result.col(i) = activation_func_.apply(result.col(i));
     }
     return result;
 }
 
-Matrix Layer::backward(Matrix&& U, AMSGradOptimizer opt) {
+Matrix Layer::backward(Matrix&& U, Optimizer opt) {
     assert((U.cols() == A_.rows()) && "Incorrect size of input rows in backward.");
-    assert((U.rows() == cache_->input_batch.cols()) && "Incorrect batch size in backward.");
-    assert(cache_ != nullptr && "Uninitialized cache during training in backward.");
+    assert((U.rows() == lcache_->input_batch.cols()) && "Incorrect batch size in backward.");
+    assert(lcache_ != nullptr && "Uninitialized layer cache during training in backward.");
 
     Index batch_size = U.rows();
     for (Index i = 0; i < batch_size; ++i) {
-        U.row(i) *= activation_func_.derivative(cache_->modified_input_batch.col(i));
+        U.row(i) *= activation_func_.derivative(lcache_->modified_input_batch.col(i));
     }
     Vector gradb = U.transpose().rowwise().mean();
-    Matrix gradA = U.transpose() * cache_->input_batch.transpose() / batch_size;
+    Matrix gradA = U.transpose() * lcache_->input_batch.transpose() / batch_size;
 
     Matrix result = U * A_;
-    opt.update(A_, std::move(gradA), cache_->cache_A);
-    opt.update(b_, std::move(gradb), cache_->cache_b);
+
+    opt->update(A_, std::move(gradA), opt_cache_A_);
+    opt->update(b_, std::move(gradb), opt_cache_b_);
 
     return result;
 }
@@ -53,12 +54,16 @@ Matrix Layer::predict(Matrix&& X) const {
     return X;
 }
 
-void Layer::initCache() {
-    cache_ = std::make_unique<Cache>();
+void Layer::initCache(Optimizer opt) {
+    lcache_ = std::make_unique<LayerCache>();
+    opt->initCache(opt_cache_b_, b_);
+    opt->initCache(opt_cache_A_, A_);
 }
 
 void Layer::resetCache() {
-    cache_.reset();
+    lcache_.reset();
+    opt_cache_b_.reset();
+    opt_cache_A_.reset();
 }
 
 }  // namespace NeuralNetworks

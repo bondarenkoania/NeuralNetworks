@@ -8,15 +8,11 @@ AMSGradOptimizer::AMSGradOptimizer(double a, double beta1, double beta2, double 
     : a_(a), beta1_(beta1), beta2_(beta2), eps_(eps) {
 }
 
-void AMSGradOptimizer::update(Matrix& w, Matrix&& grad,
-                              AMSGradOptimizer::AMSGradCache& cache) const {
-    if (cache.t == 0) {
-        cache.m = Matrix::Zero(w.rows(), w.cols());
-        cache.v = Matrix::Zero(w.rows(), w.cols());
-        cache.v_hat = Matrix::Zero(w.rows(), w.cols());
-    }
-    ++cache.t;
+void AMSGradOptimizer::update(Matrix& w, Matrix&& grad, std::any& any_cache) const {
+    auto& cache = std::any_cast<AMSGradCache&>(any_cache);
+    assert(cache.m.rows() != 0 && "Uninitialized AMSGrad cache during training.");
 
+    ++cache.t;
     cache.m = beta1_ * cache.m + (1.0 - beta1_) * grad;
     cache.v = beta2_ * cache.v + (1.0 - beta2_) * grad.cwiseAbs2();
     cache.v_hat = cache.v_hat.cwiseMax(cache.v);
@@ -27,15 +23,11 @@ void AMSGradOptimizer::update(Matrix& w, Matrix&& grad,
     w -= (a_ * m_corr.array() / (v_hat_corr.array().sqrt() + eps_).array()).matrix();
 }
 
-void AMSGradOptimizer::update(Vector& w, Vector&& grad,
-                              AMSGradOptimizer::AMSGradCache& cache) const {
-    if (cache.t == 0) {
-        cache.m = Vector::Zero(w.rows());
-        cache.v = Vector::Zero(w.rows());
-        cache.v_hat = Vector::Zero(w.rows());
-    }
-    ++cache.t;
+void AMSGradOptimizer::update(Vector& w, Vector&& grad, std::any& any_cache) const {
+    auto& cache = std::any_cast<AMSGradCache&>(any_cache);
+    assert(cache.m.rows() != 0 && "Uninitialized AMSGrad cache during training.");
 
+    ++cache.t;
     cache.m = beta1_ * cache.m + (1.0 - beta1_) * grad;
     cache.v = beta2_ * cache.v + (1.0 - beta2_) * grad.cwiseAbs2();
     cache.v_hat = cache.v_hat.cwiseMax(cache.v);
@@ -44,6 +36,24 @@ void AMSGradOptimizer::update(Vector& w, Vector&& grad,
     Vector v_hat_corr = cache.v_hat / (1.0 - pow(beta2_, cache.t));
 
     w -= (a_ * m_corr.array() / (v_hat_corr.array().sqrt() + eps_).array()).matrix();
+}
+
+void AMSGradOptimizer::initCache(std::any& any_cache, const Vector& w) const {
+    any_cache = AMSGradCache();
+    auto& cache = std::any_cast<AMSGradCache&>(any_cache);
+
+    cache.m = Vector::Zero(w.rows());
+    cache.v = Vector::Zero(w.rows());
+    cache.v_hat = Vector::Zero(w.rows());
+}
+
+void AMSGradOptimizer::initCache(std::any& any_cache, const Matrix& w) const {
+    any_cache = AMSGradCache();
+    auto& cache = std::any_cast<AMSGradCache&>(any_cache);
+
+    cache.m = Matrix::Zero(w.rows(), w.cols());
+    cache.v = Matrix::Zero(w.rows(), w.cols());
+    cache.v_hat = Matrix::Zero(w.rows(), w.cols());
 }
 
 }  // namespace NeuralNetworks

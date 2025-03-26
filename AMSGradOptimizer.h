@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LinearAlgebra.h"
+#include <any>
 
 namespace NeuralNetworks {
 
@@ -16,8 +17,10 @@ public:
         int t = 0;
     };
 
-    void update(Matrix& w, Matrix&& grad, AMSGradCache& cache) const;
-    void update(Vector& w, Vector&& grad, AMSGradCache& cache) const;
+    void update(Matrix& w, Matrix&& grad, std::any& any_cache) const;
+    void update(Vector& w, Vector&& grad, std::any& any_cache) const;
+    void initCache(std::any& any_cache, const Vector& w) const;
+    void initCache(std::any& any_cache, const Matrix& w) const;
 
 private:
     double a_ = 0.001;

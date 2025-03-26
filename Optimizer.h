@@ -11,6 +11,8 @@ private:
     public:
         virtual void update(Matrix& w, Matrix&& grad, std::any& cache) const = 0;
         virtual void update(Vector& w, Vector&& grad, std::any& cache) const = 0;
+        virtual void initCache(std::any& cache, const Vector& w) const = 0;
+        virtual void initCache(std::any& cache, const Matrix& w) const = 0;
         virtual ~Concept() = default;
 
     private:
@@ -26,11 +28,18 @@ private:
         }
         Model(DecayedOpt&& optimizer) : obj_(std::move(optimizer)) {
         }
+
         void update(Matrix& w, Matrix&& grad, std::any& cache) const final {
             obj_.update(w, std::move(grad), cache);
         }
         void update(Vector& w, Vector&& grad, std::any& cache) const final {
             obj_.update(w, std::move(grad), cache);
+        }
+        void initCache(std::any& cache, const Vector& w) const final {
+            obj_.initCache(cache, w);
+        }
+        void initCache(std::any& cache, const Matrix& w) const final {
+            obj_.initCache(cache, w);
         }
 
     private:

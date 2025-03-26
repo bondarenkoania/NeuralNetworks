@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "Dataset.h"
+#include "Optimizer.h"
+#include "AMSGradOptimizer.h"
 
 using namespace NeuralNetworks;
 
@@ -12,6 +14,8 @@ int main() {
     } catch (...) {
         std::cout << ":(";
     }
+
+    Optimizer opt = AMSGradOptimizer();
 
     Matrix im(5, 4);
     int val = 1;
