@@ -24,7 +24,7 @@ Matrix Layer::forward(Matrix&& X) {
     return result;
 }
 
-Matrix Layer::backward(Matrix&& U, Optimizer opt) {
+Matrix Layer::backward(Matrix&& U, AMSGradOptimizer opt) {
     assert((U.cols() == A_.rows()) && "Incorrect size of input rows in backward.");
     assert((U.rows() == cache_->input_batch.cols()) && "Incorrect batch size in backward.");
     assert(cache_ != nullptr && "Uninitialized cache during training in backward.");

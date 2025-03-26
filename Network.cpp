@@ -15,13 +15,13 @@ Matrix Network::forward(Matrix&& data) {
     return data;
 }
 
-void Network::backward(Matrix&& grad, Optimizer optimizer) {
+void Network::backward(Matrix&& grad, AMSGradOptimizer optimizer) {
     for (Layer& layer : std::ranges::reverse_view(layers_)) {
         grad = layer.backward(std::move(grad), optimizer);
     }
 }
 
-void Network::train(int epochs, BatchSize batch_size, Optimizer optimizer,
+void Network::train(int epochs, BatchSize batch_size, AMSGradOptimizer optimizer,
                     const LossFunction& loss_func, Dataset& dataset) {
     initCache();
     for (int e = 0; e < epochs; ++e) {

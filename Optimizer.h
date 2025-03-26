@@ -1,29 +1,66 @@
 #pragma once
-
 #include "LinearAlgebra.h"
+#include <any>
+#include <memory>
 
 namespace NeuralNetworks {
 
 class Optimizer {
-public:
-    Optimizer();
-    Optimizer(double a, double beta1, double beta2, double eps);
+private:
+    class Concept {
+    public:
+        virtual void update(Matrix& w, Matrix&& grad, std::any& cache) const = 0;
+        virtual void update(Vector& w, Vector&& grad, std::any& cache) const = 0;
+        virtual ~Concept() = default;
 
-    struct AMSGradCache {
-        Matrix m;
-        Matrix v;
-        Matrix v_hat;
-        int t = 0;
+    private:
+        friend class Optimizer;
+        virtual std::unique_ptr<Concept> make_copy_() const = 0;
     };
 
-    void update(Matrix& w, Matrix&& grad, AMSGradCache& cache) const;
-    void update(Vector& w, Vector&& grad, AMSGradCache& cache) const;
+    template <typename Opt>
+    class Model : public Concept {
+    public:
+        using DecayedOpt = std::decay_t<Opt>;
+        Model(const DecayedOpt& optimizer) : obj_(optimizer) {
+        }
+        Model(DecayedOpt&& optimizer) : obj_(std::move(optimizer)) {
+        }
+        void update(Matrix& w, Matrix&& grad, std::any& cache) const final {
+            obj_.update(w, std::move(grad), cache);
+        }
+        void update(Vector& w, Vector&& grad, std::any& cache) const final {
+            obj_.update(w, std::move(grad), cache);
+        }
+
+    private:
+        std::unique_ptr<Concept> make_copy_() const final {
+            return std::make_unique<Model<DecayedOpt>>(obj_);
+        }
+        DecayedOpt obj_;
+    };
+
+public:
+    Optimizer() = default;
+
+    template <typename Opt,
+              typename = std::enable_if_t<!std::is_same_v<std::decay_t<Opt>, Optimizer>>>
+    Optimizer(Opt&& object) : model_(std::make_unique<Model<Opt>>(std::forward<Opt>(object))) {
+    }
+
+    Optimizer(const Optimizer& other);
+    Optimizer& operator=(const Optimizer& other);
+    Optimizer(Optimizer&& other) noexcept = default;
+    Optimizer& operator=(Optimizer&& other) noexcept = default;
+
+    const Concept* operator->() const;
+    Concept* operator->();
+
+    bool isDefined() const;
+    void clear();
 
 private:
-    double a_ = 0.001;
-    double beta1_ = 0.9;
-    double beta2_ = 0.999;
-    double eps_ = 1e-8;
+    std::unique_ptr<Concept> model_;
 };
 
 }  // namespace NeuralNetworks

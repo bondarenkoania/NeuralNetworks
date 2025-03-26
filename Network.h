@@ -11,15 +11,15 @@ namespace NeuralNetworks {
 
 class Network {
 public:
-    void train(int epochs, BatchSize batch_size, Optimizer optimizer, const LossFunction& loss_func,
-               Dataset& dataset);
+    void train(int epochs, BatchSize batch_size, AMSGradOptimizer optimizer,
+               const LossFunction& loss_func, Dataset& dataset);
     Matrix predict(Matrix&& data) const;
 
 private:
     friend class NetworkBuilder;
     Network();
     Matrix forward(Matrix&& data);
-    void backward(Matrix&& grad, Optimizer optimizer);
+    void backward(Matrix&& grad, AMSGradOptimizer optimizer);
 
     std::vector<Layer> layers_;
 

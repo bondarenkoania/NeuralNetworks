@@ -2,7 +2,7 @@
 
 #include "ActivationFunction.h"
 #include "Random.h"
-#include "Optimizer.h"
+#include "AMSGradOptimizer.h"
 
 namespace NeuralNetworks {
 
@@ -14,14 +14,14 @@ public:
     Layer(In input_size, Out output_size, ActivationFunction func, Random& rnd);
 
     Matrix forward(Matrix&& X);
-    Matrix backward(Matrix&& U, Optimizer opt);
+    Matrix backward(Matrix&& U, AMSGradOptimizer opt);
     Matrix predict(Matrix&& X) const;
 
     struct Cache {
         Matrix input_batch;
         Matrix modified_input_batch;
-        Optimizer::AMSGradCache cache_A;
-        Optimizer::AMSGradCache cache_b;
+        AMSGradOptimizer::AMSGradCache cache_A;
+        AMSGradOptimizer::AMSGradCache cache_b;
     };
 
     void initCache();
