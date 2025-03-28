@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.30)
 project(NeuralNetworks)
 
-set(CMAKE_CXX_STANDARD 20)
+add_compile_definitions(SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 add_subdirectory(external/eigen)
 
@@ -17,7 +17,6 @@ add_executable(NeuralNetworks main.cpp
         Random.cpp
         NetworkBuilder.cpp
         FileReader.cpp
-        Scheduler.cpp
         AMSGradOptimizer.cpp
         Optimizer.cpp)
 

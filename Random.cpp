@@ -3,8 +3,6 @@
 
 namespace NeuralNetworks {
 
-Random::Random() = default;
-
 Random::Random(int seed) : generator_(seed) {
 }
 
@@ -24,13 +22,11 @@ Vector Random::normalVector(Index rows, double mean, double stdev) {
     return Eigen::Rand::normal<Matrix>(rows, 1, generator_, mean, stdev);
 }
 
-void Random::shuffleData(Matrix& images, Matrix& labels) {
-    Permutation perm(images.rows());
+Matrix Random::permMatrix(Index size) {
+    Permutation perm(size);
     perm.setIdentity();
     std::shuffle(perm.indices().data(), perm.indices().data() + perm.indices().size(), generator_);
-
-    images = perm * images;
-    labels = perm * labels;
+    return perm;
 }
 
 Random& Random::globalRandom() {

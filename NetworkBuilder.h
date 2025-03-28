@@ -10,9 +10,9 @@ public:
     explicit NetworkBuilder(In input_size);
     NetworkBuilder& add_layer(Out output_size, ActivationFunction func,
                               Random& rnd = Random::globalRandom());
-    void add_layers(std::initializer_list<Out> outputs,
-                    std::initializer_list<ActivationFunction> funcs,
-                    Random& rnd = Random::globalRandom());
+    NetworkBuilder& add_layers(std::initializer_list<Out> outputs,
+                               std::initializer_list<ActivationFunction> funcs,
+                               Random& rnd = Random::globalRandom());
     void reset(In input_size);
     Network extract();
 

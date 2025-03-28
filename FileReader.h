@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <fstream>
 #include "LinearAlgebra.h"
 
 namespace NeuralNetworks {
@@ -12,12 +13,16 @@ struct Data {
 class FileReader {
 public:
     explicit FileReader(std::filesystem::path path);
-    Data read(Index lines) const;
+    std::optional<Data> read(Index lines) noexcept;
+    bool isOpen() const;
 
 private:
-    std::filesystem::path path_;
-    const Index k_num_pixels_ = 784;
-    const Index k_labels_size_ = 10;
+    Data read_helper(Index lines);
+
+    static constexpr Index k_num_pixels_ = 784;
+    static constexpr Index k_labels_size_ = 10;
+
+    std::ifstream file_;
 };
 
 }  // namespace NeuralNetworks

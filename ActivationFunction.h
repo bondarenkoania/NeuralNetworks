@@ -13,14 +13,14 @@ Matrix ReLU_Der(const Vector& x);
 }  // namespace AFunc
 
 class ActivationFunction {
-    using ApplyFunc = std::function<Vector(Vector)>;
-    using DerFunc = std::function<Matrix(Vector)>;
+    using ApplyFunc = std::function<Vector(const Vector&)>;
+    using DerFunc = std::function<Matrix(const Vector&)>;
 
 public:
-    ActivationFunction();
+    ActivationFunction() = default;
     ActivationFunction(ApplyFunc func, DerFunc func_der);
-    Vector apply(Vector x) const;
-    Matrix derivative(Vector x) const;
+    Vector apply(const Vector& x) const;
+    Matrix derivative(const Vector& x) const;
 
 private:
     ApplyFunc sigma_ = AFunc::ReLU;

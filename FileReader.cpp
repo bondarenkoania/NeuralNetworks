@@ -1,21 +1,28 @@
 #include "FileReader.h"
-#include <fstream>
 
 namespace NeuralNetworks {
 
-FileReader::FileReader(std::filesystem::path path) : path_(std::move(path)) {
+FileReader::FileReader(std::filesystem::path path) : file_(path) {
 }
 
-Data FileReader::read(Index lines) const {
-    std::ifstream file(path_);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file " + path_.string());
+std::optional<Data> FileReader::read(Index lines) noexcept {
+    try {
+        return read_helper(lines);
+    } catch (...) {
+        return std::nullopt;
     }
+}
+
+bool FileReader::isOpen() const {
+    return file_.is_open();
+}
+
+Data FileReader::read_helper(Index lines) {
     Matrix images(lines, k_num_pixels_);
     Matrix labels = Matrix::Zero(lines, k_labels_size_);
 
     std::string line;
-    for (Index i = 0; i < lines && std::getline(file, line); ++i) {
+    for (Index i = 0; i < lines && std::getline(file_, line); ++i) {
         std::stringstream ss(std::move(line));
         std::string pix;
 

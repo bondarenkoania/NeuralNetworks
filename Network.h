@@ -14,17 +14,27 @@ public:
     void train(int epochs, BatchSize batch_size, Optimizer optimizer, const LossFunction& loss_func,
                Dataset& dataset);
     Matrix predict(Matrix&& data) const;
+    Matrix predict(const Matrix& data) const;
 
 private:
+    class SwitchGuard {
+    public:
+        SwitchGuard(Network* network, Optimizer optimizer);
+        ~SwitchGuard();
+
+    private:
+        Network* network_;
+    };
+
     friend class NetworkBuilder;
-    Network();
+    Network() = default;
     Matrix forward(Matrix&& data);
     void backward(Matrix&& grad, Optimizer optimizer);
 
-    std::vector<Layer> layers_;
-
     void initCache(Optimizer opt);
     void resetCache();
+
+    std::vector<Layer> layers_;
 };
 
 }  // namespace NeuralNetworks

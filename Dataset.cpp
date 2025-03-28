@@ -1,11 +1,16 @@
 #include "Dataset.h"
-#include "Random.h"
 
 namespace NeuralNetworks {
 
-Dataset::Dataset(Data&& data) {
-    assert(data.images.rows() == data.labels.rows() && "Mismatched numbers of images and labels.");
-    data_ = std::move(data);
+Dataset::Dataset(Data&& data) : data_(std::move(data)) {
+    assert(data_.images.rows() == data_.labels.rows() &&
+           "Mismatched numbers of images and labels.");
+}
+
+void Dataset::shuffle(Random& rnd) {
+    Matrix perm = rnd.permMatrix(data_.images.rows());
+    data_.images = perm * data_.images;
+    data_.labels = perm * data_.labels;
 }
 
 Index Dataset::size() const {
@@ -16,11 +21,12 @@ Dataset::BatchIterator::BatchIterator(const Dataset& dataset, BatchSize batch_si
     : dataset_(dataset), batch_size_(batch_size), ind_(ind) {
 }
 
-Batch Dataset::BatchIterator::operator*() const {
+Dataset::Batch Dataset::BatchIterator::operator*() const {
     Index start = ind_ * batch_size_;
-    Index len = (dataset_.size() - start >= batch_size_) ? batch_size_ : dataset_.size() - start;
-    return {dataset_.data_.images.middleRows(start, len).transpose(),
-            dataset_.data_.labels.middleRows(start, len).transpose()};
+    Index len = (dataset_.get().size() - start >= batch_size_) ? batch_size_
+                                                               : dataset_.get().size() - start;
+    return {dataset_.get().data_.images.middleRows(start, len).transpose(),
+            dataset_.get().data_.labels.middleRows(start, len).transpose()};
 }
 
 Dataset::BatchIterator& Dataset::BatchIterator::operator++() {
@@ -33,7 +39,7 @@ bool Dataset::BatchIterator::operator==(const BatchIterator& other) const {
 }
 
 bool Dataset::BatchIterator::operator!=(const BatchIterator& other) const {
-    return ind_ != other.ind_;
+    return !(*this == other);
 }
 
 Dataset::BatchRange::BatchRange(const Dataset& dataset, BatchSize batch_size)
@@ -45,15 +51,11 @@ Dataset::BatchIterator Dataset::BatchRange::begin() const {
 }
 
 Dataset::BatchIterator Dataset::BatchRange::end() const {
-    return {dataset_, batch_size_, (dataset_.size() + batch_size_ - 1) / batch_size_};
+    return {dataset_, batch_size_, (dataset_.get().size() + batch_size_ - 1) / batch_size_};
 }
 
-Dataset::BatchRange Dataset::getBatches(BatchSize batch_size) const {
+Dataset::BatchRange Dataset::batches(BatchSize batch_size) const {
     return {*this, batch_size};
-}
-
-void Dataset::shuffle() {
-    Random::globalRandom().shuffleData(data_.images, data_.labels);
 }
 
 }  // namespace NeuralNetworks

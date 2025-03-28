@@ -1,7 +1,6 @@
 #pragma once
 #include "LinearAlgebra.h"
 #include <any>
-#include <memory>
 
 namespace NeuralNetworks {
 
@@ -9,10 +8,10 @@ class Optimizer {
 private:
     class Concept {
     public:
-        virtual void update(Matrix& w, Matrix&& grad, std::any& cache) const = 0;
-        virtual void update(Vector& w, Vector&& grad, std::any& cache) const = 0;
-        virtual void initCache(std::any& cache, const Vector& w) const = 0;
-        virtual void initCache(std::any& cache, const Matrix& w) const = 0;
+        virtual void update(Matrix& w, Matrix&& gradA, std::any& cache) const = 0;
+        virtual void update(Vector& w, Vector&& gradb, std::any& cache) const = 0;
+        virtual std::any initCache(const Vector& w) const = 0;
+        virtual std::any initCache(const Matrix& w) const = 0;
         virtual ~Concept() = default;
 
     private:
@@ -29,17 +28,17 @@ private:
         Model(DecayedOpt&& optimizer) : obj_(std::move(optimizer)) {
         }
 
-        void update(Matrix& w, Matrix&& grad, std::any& cache) const final {
-            obj_.update(w, std::move(grad), cache);
+        void update(Matrix& w, Matrix&& gradA, std::any& cache) const final {
+            obj_.update(w, std::move(gradA), cache);
         }
-        void update(Vector& w, Vector&& grad, std::any& cache) const final {
-            obj_.update(w, std::move(grad), cache);
+        void update(Vector& w, Vector&& gradb, std::any& cache) const final {
+            obj_.update(w, std::move(gradb), cache);
         }
-        void initCache(std::any& cache, const Vector& w) const final {
-            obj_.initCache(cache, w);
+        std::any initCache(const Vector& w) const final {
+            return obj_.initCache(w);
         }
-        void initCache(std::any& cache, const Matrix& w) const final {
-            obj_.initCache(cache, w);
+        std::any initCache(const Matrix& w) const final {
+            return obj_.initCache(w);
         }
 
     private:

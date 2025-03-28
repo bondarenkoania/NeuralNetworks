@@ -13,18 +13,16 @@ Matrix ReLU_Der(const Vector& x) {
 }
 }  // namespace AFunc
 
-ActivationFunction::ActivationFunction() = default;
-
 ActivationFunction::ActivationFunction(ApplyFunc func, DerFunc func_der)
     : sigma_(std::move(func)), sigma_derivative_(std::move(func_der)) {
 }
 
-Vector ActivationFunction::apply(Vector x) const {
-    return sigma_(std::move(x));
+Vector ActivationFunction::apply(const Vector& x) const {
+    return sigma_(x);
 }
 
-Matrix ActivationFunction::derivative(Vector x) const {
-    return sigma_derivative_(std::move(x));
+Matrix ActivationFunction::derivative(const Vector& x) const {
+    return sigma_derivative_(x);
 }
 
 }  // namespace NeuralNetworks

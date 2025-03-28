@@ -56,8 +56,8 @@ Matrix Layer::predict(Matrix&& X) const {
 
 void Layer::initCache(Optimizer opt) {
     lcache_ = std::make_unique<LayerCache>();
-    opt->initCache(opt_cache_b_, b_);
-    opt->initCache(opt_cache_A_, A_);
+    opt_cache_b_ = opt->initCache(b_);
+    opt_cache_A_ = opt->initCache(A_);
 }
 
 void Layer::resetCache() {

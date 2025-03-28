@@ -1,17 +1,18 @@
 #pragma once
 
 #include "FileReader.h"
+#include "Random.h"
 
 namespace NeuralNetworks {
 
 enum BatchSize : Index;
 
-using Batch = Data;
-
 class Dataset {
 public:
+    using Batch = Data;
+
     explicit Dataset(Data&& data);
-    void shuffle();
+    void shuffle(Random& rnd = Random::globalRandom());
     Index size() const;
 
     class BatchIterator {
@@ -23,7 +24,7 @@ public:
         bool operator!=(const BatchIterator& other) const;
 
     private:
-        const Dataset& dataset_;
+        std::reference_wrapper<const Dataset> dataset_;
         BatchSize batch_size_;
         Index ind_;
     };
@@ -35,11 +36,11 @@ public:
         BatchIterator end() const;
 
     private:
-        const Dataset& dataset_;
+        std::reference_wrapper<const Dataset> dataset_;
         BatchSize batch_size_;
     };
 
-    BatchRange getBatches(BatchSize batch_size) const;
+    BatchRange batches(BatchSize batch_size) const;
 
 private:
     Data data_;

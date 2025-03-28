@@ -7,20 +7,20 @@ namespace NeuralNetworks {
 
 class AMSGradOptimizer {
 public:
-    AMSGradOptimizer();
+    AMSGradOptimizer() = default;
     AMSGradOptimizer(double a, double beta1, double beta2, double eps);
 
-    struct AMSGradCache {
+    struct Cache {
         Matrix m;
         Matrix v;
         Matrix v_hat;
         int t = 0;
     };
 
-    void update(Matrix& w, Matrix&& grad, std::any& any_cache) const;
-    void update(Vector& w, Vector&& grad, std::any& any_cache) const;
-    void initCache(std::any& any_cache, const Vector& w) const;
-    void initCache(std::any& any_cache, const Matrix& w) const;
+    void update(Matrix& w, Matrix&& gradA, std::any& any_cache) const;
+    void update(Vector& w, Vector&& gradb, std::any& any_cache) const;
+    std::any initCache(const Vector& w) const;
+    std::any initCache(const Matrix& w) const;
 
 private:
     double a_ = 0.001;

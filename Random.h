@@ -9,13 +9,13 @@ class Random {
     using Generator = Eigen::Rand::P8_mt19937_64;
 
 public:
-    Random();
+    Random() = default;
     explicit Random(int seed);
     Matrix normalMatrix(Index rows, Index cols);
     Matrix normalMatrix(Index rows, Index cols, double mean, double stdev);
     Vector normalVector(Index rows);
     Vector normalVector(Index rows, double mean, double stdev);
-    void shuffleData(Matrix& images, Matrix& labels);
+    Matrix permMatrix(Index size);
 
     static Random& globalRandom();
 

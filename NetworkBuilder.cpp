@@ -11,8 +11,9 @@ NetworkBuilder& NetworkBuilder::add_layer(Out output_size, ActivationFunction fu
     return *this;
 }
 
-void NetworkBuilder::add_layers(std::initializer_list<Out> outputs,
-                                std::initializer_list<ActivationFunction> funcs, Random& rnd) {
+NetworkBuilder& NetworkBuilder::add_layers(std::initializer_list<Out> outputs,
+                                           std::initializer_list<ActivationFunction> funcs,
+                                           Random& rnd) {
     assert(outputs.size() == funcs.size() &&
            "Mismatched number of layers and number of activation functions.");
     auto it1 = outputs.begin();
@@ -20,6 +21,7 @@ void NetworkBuilder::add_layers(std::initializer_list<Out> outputs,
     for (; it1 != outputs.end(); ++it1, ++it2) {
         add_layer(*it1, *it2, rnd);
     }
+    return *this;
 }
 
 void NetworkBuilder::reset(In input_size) {

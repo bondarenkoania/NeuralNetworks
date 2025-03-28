@@ -17,10 +17,10 @@ class LossFunction {
     using LossDer = std::function<Row(const Vector&, const Vector&)>;
 
 public:
-    LossFunction();
+    LossFunction() = default;
     LossFunction(LossFunc loss_func, LossDer loss_func_der);
-    double forward(const Matrix& X, const Matrix& Y) const;
-    Matrix backward(Matrix&& X, const Matrix& Y) const;
+    double calculate(const Matrix& X, const Matrix& Y) const;
+    Matrix derivative(Matrix&& X, const Matrix& Y) const;
 
 private:
     LossFunc loss_func_ = LFunc::SquaredEuclidDist;
