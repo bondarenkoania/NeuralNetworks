@@ -15,7 +15,7 @@ public:
     Matrix normalMatrix(Index rows, Index cols, double mean, double stdev);
     Vector normalVector(Index rows);
     Vector normalVector(Index rows, double mean, double stdev);
-    Matrix permMatrix(Index size);
+    Permutation permMatrix(Index size);
 
     static Random& globalRandom();
 

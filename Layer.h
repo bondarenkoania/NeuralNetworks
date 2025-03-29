@@ -12,6 +12,7 @@ enum Out : Index;
 class Layer {
 public:
     Layer(In input_size, Out output_size, ActivationFunction func, Random& rnd);
+    Layer(Matrix&& A, Vector&& b, ActivationFunction func);
 
     Matrix forward(Matrix&& X);
     Matrix backward(Matrix&& U, Optimizer opt);
@@ -24,6 +25,9 @@ public:
 
     void initCache(Optimizer opt);
     void resetCache();
+    const Matrix& getA() const;
+    const Vector& getb() const;
+    ActivationType getActivationType() const;
 
 private:
     Matrix A_;

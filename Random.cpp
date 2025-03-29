@@ -22,7 +22,7 @@ Vector Random::normalVector(Index rows, double mean, double stdev) {
     return Eigen::Rand::normal<Matrix>(rows, 1, generator_, mean, stdev);
 }
 
-Matrix Random::permMatrix(Index size) {
+Permutation Random::permMatrix(Index size) {
     Permutation perm(size);
     perm.setIdentity();
     std::shuffle(perm.indices().data(), perm.indices().data() + perm.indices().size(), generator_);

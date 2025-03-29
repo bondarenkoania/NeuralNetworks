@@ -1,4 +1,5 @@
 #include "NetworkBuilder.h"
+#include "Saver.h"
 
 namespace NeuralNetworks {
 
@@ -22,6 +23,12 @@ NetworkBuilder& NetworkBuilder::add_layers(std::initializer_list<Out> outputs,
         add_layer(*it1, *it2, rnd);
     }
     return *this;
+}
+
+Network NetworkBuilder::load_layers(std::filesystem::path path) {
+    assert(net_.layers_.empty() && "Not empty network while parameters loading.");
+    Saver::loadParameters(net_, path);
+    return std::move(net_);
 }
 
 void NetworkBuilder::reset(In input_size) {

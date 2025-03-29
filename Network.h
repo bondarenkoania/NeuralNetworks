@@ -27,6 +27,8 @@ private:
     };
 
     friend class NetworkBuilder;
+    friend class Saver;
+
     Network() = default;
     Matrix forward(Matrix&& data);
     void backward(Matrix&& grad, Optimizer optimizer);

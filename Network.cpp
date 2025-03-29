@@ -1,22 +1,30 @@
-#include "Dataset.h"
 #include "Network.h"
-#include <ranges>
-
 #include "LinearAlgebra.h"
+#include "Dataset.h"
+
+#include <ranges>
+#include <iostream>
 
 namespace NeuralNetworks {
 
 void Network::train(int epochs, BatchSize batch_size, Optimizer optimizer,
                     const LossFunction& loss_func, Dataset& dataset) {
     SwitchGuard to_train_mode(this, optimizer);
+    double average_loss;
+    double data_size = dataset.size();
+
     for (int e = 0; e < epochs; ++e) {
         dataset.shuffle();
-        for (Dataset::BatchRange range = dataset.batches(batch_size);
-             Dataset::Batch batch : range) {
+        average_loss = 0.0;
+        for (Dataset::Batch batch : dataset.batches(batch_size)) {
             Matrix prediction = forward(std::move(batch.images));
+            double loss = loss_func.calculate(prediction, batch.labels);
+            average_loss += loss / data_size;
             Matrix loss_gradient = loss_func.derivative(std::move(prediction), batch.labels);
             backward(std::move(loss_gradient), optimizer);
         }
+
+        std::cout << "epoch " << e + 1 << ": loss " << average_loss << std::endl;
     }
 }
 

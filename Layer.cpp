@@ -9,6 +9,10 @@ Layer::Layer(In input_size, Out output_size, ActivationFunction func, Random& rn
       activation_func_(std::move(func)) {
 }
 
+Layer::Layer(Matrix&& A, Vector&& b, ActivationFunction func)
+    : A_(std::move(A)), b_(std::move(b)), activation_func_(std::move(func)) {
+}
+
 Matrix Layer::forward(Matrix&& X) {
     assert(X.rows() == A_.cols() && "Incorrect size of input vectors in forward.");
     assert(lcache_ != nullptr && "Uninitialized layer cache during training in forward.");
@@ -48,6 +52,7 @@ Matrix Layer::predict(Matrix&& X) const {
     assert((X.rows() == A_.cols()) && "Incorrect size of input vectors in predict.");
 
     X = A_ * X;
+    X.colwise() += b_;
     for (Index i = 0; i < X.cols(); ++i) {
         X.col(i) = activation_func_.apply(X.col(i));
     }
@@ -64,6 +69,18 @@ void Layer::resetCache() {
     lcache_.reset();
     opt_cache_b_.reset();
     opt_cache_A_.reset();
+}
+
+const Matrix& Layer::getA() const {
+    return A_;
+}
+
+const Vector& Layer::getb() const {
+    return b_;
+}
+
+ActivationType Layer::getActivationType() const {
+    return activation_func_.getType();
 }
 
 }  // namespace NeuralNetworks

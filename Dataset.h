@@ -14,6 +14,7 @@ public:
     explicit Dataset(Data&& data);
     void shuffle(Random& rnd = Random::globalRandom());
     Index size() const;
+    Index inputSize() const;
 
     class BatchIterator {
     public:

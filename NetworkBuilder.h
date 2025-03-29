@@ -13,6 +13,8 @@ public:
     NetworkBuilder& add_layers(std::initializer_list<Out> outputs,
                                std::initializer_list<ActivationFunction> funcs,
                                Random& rnd = Random::globalRandom());
+    Network load_layers(std::filesystem::path path);
+
     void reset(In input_size);
     Network extract();
 

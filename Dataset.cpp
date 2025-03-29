@@ -8,13 +8,17 @@ Dataset::Dataset(Data&& data) : data_(std::move(data)) {
 }
 
 void Dataset::shuffle(Random& rnd) {
-    Matrix perm = rnd.permMatrix(data_.images.rows());
+    auto perm = rnd.permMatrix(data_.images.rows());
     data_.images = perm * data_.images;
     data_.labels = perm * data_.labels;
 }
 
 Index Dataset::size() const {
     return data_.images.rows();
+}
+
+Index Dataset::inputSize() const {
+    return data_.images.cols();
 }
 
 Dataset::BatchIterator::BatchIterator(const Dataset& dataset, BatchSize batch_size, Index ind)
