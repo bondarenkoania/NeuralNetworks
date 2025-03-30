@@ -1,0 +1,10 @@
+[submodule "external/eigen"]
+	path = external/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.4
+[submodule "external/eigenrand"]
+	path = external/eigenrand
+	url = https://github.com/bab2min/EigenRand.git
+[submodule "external/Catch2"]
+	path = external/Catch2
+	url = https://github.com/catchorg/Catch2.git
